@@ -133,3 +133,7 @@ if __name__ == "__main__":
     tree.add_node(20)
     tree.add_node(30)
     # print(tree)
+
+# Make two trees: 1. Stable and 2.Unstable
+# Candidates from unstable are removed from unstable and put into stable
+# Candidates for change in stable are removed and put into unstable
