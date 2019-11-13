@@ -42,6 +42,10 @@ class Node:
         if self.parent is not None:
             return self.parent.get_sibling()
         return None
+    def get_red(self):
+        if self.left.color is 1 or self.right.color is 1:
+            return True
+        return False
 
 
 class RedBlackTree:
@@ -94,16 +98,22 @@ class RedBlackTree:
             print("not found")
             return None
         elif node.data is val:
-            if node.left is None and node.right is None:
+            if node.left.data is None and node.right.data is None:
+                self.correct_deletion(node.left,node)
                 return None
-            elif node.left is None and node.right is not None:
+            elif node.left.data is None and node.right.data is not None:
+                self.correct_deletion(node.right,node)
                 return node.right
-            elif node.left is not None:
+            elif node.left.data is not None and node.right.data is None:
+                correct_deletion(node.left,node)
+                # if node.parent is not None:
+                #     if node.color is 1 or node.left.color is None:
+                #         node.left.color=0
                 return node.left
             else:
                 temp=self.insuc(node.right)
                 temp2=temp.data
-                del(node,temp2)
+                self.del_node(node,temp2)
                 node.data=temp2
                 return node
         elif node.data>val:
@@ -111,6 +121,7 @@ class RedBlackTree:
         else:
             node.right=self.del_node(node.right,val)
         return node
+
     def insuc(self,node):
         if node.left is None:
             return node
@@ -145,6 +156,15 @@ class RedBlackTree:
                 node.rotate_right()
             parent.color = 0
             grandparent.color = 1
+
+    def correct_deletion(self,u,v):
+        if u.color is 1 or v.color is 1:
+            v.color=0
+        elif u.color is 0 and v.color is 0:
+            if u.parent is not None:
+                s=u.get_sibling()
+                if s.color is 0 and s.getRed():
+                    
         
     def search_recursive(self,root, data):
         if(root is None):
