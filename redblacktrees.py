@@ -159,12 +159,18 @@ class RedBlackTree:
             return self.search_recursive(root.left, data)
     def search(self, data):
         return self.search_recursive(self.root, data)
+    def search_val(self, data):
+        node=self.search_recursive(self.root, data)
+        if node is None:
+            return "Not found!"
+        else:
+            return node.data
 if __name__ == "__main__":
     tree = RedBlackTree()
     tree.add_node(10)
     tree.add_node(20)
     tree.add_node(30)
-    print(tree.search(20).data)
+    print(tree.search_val(20))
     tree.del_node(tree.root,20)
-    print(tree.search(20).data)
+    print(tree.search_val(20))
     # print(tree)
