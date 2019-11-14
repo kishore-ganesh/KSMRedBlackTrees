@@ -27,6 +27,7 @@ class Node:
         node_left = self.left
         node_left.parent = self.parent
         self.left = node_left.right
+        node_left.right=self
         if self.parent is not None:
             if self.parent.right == self:
                 self.parent.right = node_left
@@ -38,6 +39,7 @@ class Node:
         node_right = self.right
         node_right.parent = self.parent
         self.right = node_right.left
+        node_right.left=self
         if self.parent is not None:
             if self.parent.left == self:
                 self.parent.left = node_right
@@ -113,12 +115,15 @@ class RedBlackTree:
         elif node.data is val:
             if node.left.data is None and node.right.data is None:
                 self.correct_deletion(node.left, node)
-                return None
+                node.right.parent=node.parent
+                return node.right
             elif node.left.data is None and node.right.data is not None:
                 self.correct_deletion(node.right, node)
+                node.right.parent=node.parent
                 return node.right
             elif node.left.data is not None and node.right.data is None:
                 self.correct_deletion(node.left, node)
+                node.left.parent=node.parent
                 # if node.parent is not None:
                 #     if node.color is 1 or node.left.color is None:
                 #         node.left.color=0
@@ -140,6 +145,14 @@ class RedBlackTree:
             return node
         return self.insuc(node.left)
 
+    def rotate_left(self, node):
+        if node.parent is None:
+            self.root = node.right
+        node.rotate_left()
+    def rotate_right(self, node):
+        if node.parent is None:
+            self.root = node.left 
+        node.rotate_right()
     def correct_insertion(self, node):
         # print("d")
         # print(node.data)
@@ -156,48 +169,60 @@ class RedBlackTree:
         elif parent.color == 1 and uncle.color == 0:
             grandparent = parent.get_parent()
             if (node == parent.right and parent == grandparent.left):
-                parent.rotate_left()
+                self.rotate_left(parent)
             elif (node == parent.left and parent == grandparent.right):
-                parent.rotate_right()
+                self.rotate_right(parent)
             if (node == parent.right):
-                node.rotate_left()
+                self.rotate_left(node)
             else:
-                node.rotate_right()
+                self.rotate_right(node)
             parent.color = 0
             grandparent.color = 1
 
     def correct_deletion(self, u, v):
         if u.color is 1 or v.color is 1:
-            u.color = 0
+            if(u.data is None):
+                v.color=0
+            else:
+                u.color = 0
         elif u.color is 0 and v.color is 0:
             if v.parent is not None:
                 s = v.get_sibling()
                 if s.color is 0 and s.get_red() is None:
                     s.color = 1
-                    self.correct_deletion(u, v.parent)
+                    if s.parent.color is 1:
+                        s.parent.color=0
+                    else: 
+                        self.correct_deletion(u, v.parent)
                 elif s.color is 0 and s.get_red() is not None:
                     r = s.get_red()
                     if s.parent.right is s and s.right is r:
-                        r.color = 0
-                        s.parent.rotate_left()
+                        self.rotate_left(s.parent)
+                        temp=s.left.color
+                        s.left.color=s.color
+                        s.color=temp
+                        s.right.color = 0
                     elif s.parent.left is s and s.left is r:
-                        r.color = 0
-                        s.parent.rotate_right()
+                        self.rotate_right(s.parent)
+                        temp=s.right.color
+                        s.right.color=s.color
+                        s.color=temp
+                        s.left.color = 0
                     elif s.parent.right is s and s.left is r:
                         r.color = 0
                         s.rotate_right()
-                        s.parent.parent.rotate_left()
+                        self.rotate_left(s.parent.parent)
                     elif s.parent.left is s and s.right is r:
                         r.color = 0
-                        s.rotate_left()
-                        s.parent.parent.rotate_right()
+                        self.rotate_left(s)
+                        self.rotate_right(s.parent.parent)
                 elif s.color is 1:
                     s.parent.color = 1
                     s.color = 0
                     if s.parent.left is s:
-                        s.parent.rotate_right()
+                        self.rotate_right(s.parent)
                     else:
-                        s.parent.rotate_left()
+                        self.rotate_left(s.parent)
 
     def search_recursive(self, root, data):
         if (root is None):
@@ -225,10 +250,12 @@ class RedBlackTree:
         q.put(self.root)
         while not q.empty():
             top = q.get()
-            if top.data is not None:
+            if top is not None:
                 print(str(top.data)+" "+str(top.color))
-                q.put(top.left)
-                q.put(top.right)
+                if top.left is not None:
+                    q.put(top.left)
+                if top.right is not None:
+                    q.put(top.right)
             
 
 
@@ -249,6 +276,8 @@ if __name__ == "__main__":
     # print(tree.search_val(20))
     tree.add_node(20)
     tree.add_node(50)
+    print("\n")
+    tree.level_order_traversal()
     tree.del_node(tree.root,20)
     
     print("\n")
