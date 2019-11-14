@@ -1,5 +1,6 @@
+import queue
 class Node:
-    def __init__(self, data, left, right, parent, color = 0):
+    def __init__(self, data, left, right, parent, color = 1):
         self.data = data
         self.right = right
         self.left = left
@@ -107,7 +108,7 @@ class RedBlackTree:
                 self.correct_deletion(node.right,node)
                 return node.right
             elif node.left.data is not None and node.right.data is None:
-                correct_deletion(node.left,node)
+                self.correct_deletion(node.left,node)
                 # if node.parent is not None:
                 #     if node.color is 1 or node.left.color is None:
                 #         node.left.color=0
@@ -132,14 +133,11 @@ class RedBlackTree:
 
     def correct_insertion(self, node):
         # print("d")
-        print(node.data)
+        # print(node.data)
         parent = node.get_parent() 
         uncle = node.get_uncle()
-        if uncle is not None:
-            # print(uncle.color)
-            None
         if parent.color == 0:
-            return
+            return None
         elif parent.color == 1 and uncle.color == 1:
             #Case 3 insertion
             grandparent = parent.get_parent()
@@ -212,12 +210,28 @@ class RedBlackTree:
             return "Not found!"
         else:
             return node.data
+    def level_order_traversal(self):
+        q = queue.Queue()
+        q.put(self.root)
+        while not q.empty():
+            top = q.get()
+            if top.data is not None:
+                print(str(top.data)+" "+str(top.color))
+                q.put(top.left)
+                q.put(top.right)
+            
+
+
 if __name__ == "__main__":
     tree = RedBlackTree()
-    tree.add_node(10)
-    tree.add_node(20)
     tree.add_node(30)
-    print(tree.search_val(20))
+    tree.add_node(20)
+    tree.add_node(40)
+    tree.add_node(10)
+    tree.level_order_traversal()
+    # print(tree.search_val(20))
     tree.del_node(tree.root,20)
-    print(tree.search_val(20))
+    tree.level_order_traversal()
+    # print(tree.search_val(20))
+    
     # print(tree)
