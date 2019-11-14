@@ -277,8 +277,8 @@ if __name__ == "__main__":
     unstable = RedBlackTree()
     do_stuff = True
     while do_stuff:
-        ch = input("1. Insert page\n2. Update page\n3. Check page\n4. Random update and scan\n5. Print trees\n\n 0. "
-                   "Exit\n: ")
+        ch = int(input("1. Insert page\n2. Update page\n3. Check page\n4. Random update and scan\n5. Print trees\n\n "
+                       "0. Exit\n: "))
         if ch == 0:
             do_stuff = False
             break
