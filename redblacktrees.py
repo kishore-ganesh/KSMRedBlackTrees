@@ -119,15 +119,18 @@ class RedBlackTree:
             else:
                 return self.add_node_recursively(data, root.left)
 
+    
     def add_node(self, data, checksum=None):
-        if self.root is None:
+        if self.root is None or self.root.data is None:
             left_leaf = self.create_leaf()
             right_leaf = self.create_leaf()
             self.root = Node(data, left_leaf, right_leaf, None)
             left_leaf.parent = self.root
             right_leaf.parent = self.root
             self.root.color = 0
-            return
+            if checksum is not None:
+                self.root.checksum = checksum
+            return self.root.checksum
         current = self.add_node_recursively(data, self.root)
         self.correct_insertion(current)
         if checksum is not None:
@@ -198,8 +201,10 @@ class RedBlackTree:
             grandparent = parent.get_parent()
             if (node == parent.right and parent == grandparent.left):
                 self.rotate_left(parent)
+                node = node.left
             elif (node == parent.left and parent == grandparent.right):
                 self.rotate_right(parent)
+                node = node.right
             if (node == parent.right):
                 self.rotate_left(node)
             else:
@@ -288,6 +293,8 @@ class RedBlackTree:
 def run_scan(_unstable, _stable):
     q = queue.Queue()
     q.put(_unstable.root)
+    if(_unstable.root is None):
+        return 
     while not q.empty():
         top = q.get()
         if top.data is not None:
@@ -304,8 +311,7 @@ if __name__ == "__main__":
     unstable = RedBlackTree()
     do_stuff = True
     while do_stuff:
-        ch = int(input("1. Insert page\n2. Update page\n3. Check page\n4. Random update and scan\n5. Print trees\n\n "
-                       "0. Exit\n: "))
+        ch = int(input("1. Insert page\n2. Update page\n3. Check page\n4. Random update and scan\n5. Print trees\n0. Exit\n\nOption: "))
         if ch == 0:
             do_stuff = False
             break
