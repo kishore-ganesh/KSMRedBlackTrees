@@ -252,7 +252,7 @@ class RedBlackTree:
         q.put(self.root)
         while not q.empty():
             top = q.get()
-            if top.data is not None:
+            if top is not None and top.data is not None:
                 print(str(top.data) + " " + str(top.color))
                 q.put(top.left)
                 q.put(top.right)
@@ -315,6 +315,5 @@ if __name__ == "__main__":
         elif ch == 5:
             print('Stable:')
             stable.level_order_traversal()
-            print('Unstable')
+            print('Unstable: ')
             unstable.level_order_traversal()
-    # print(tree)
