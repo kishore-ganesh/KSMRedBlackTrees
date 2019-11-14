@@ -140,7 +140,7 @@ class RedBlackTree:
     def del_node(self, node, val):
         # node=self.search(val)
         # print(node.data)
-        if node is None:
+        if node is None or node.data is None:
             print("not found")
             return None
         elif node.data is val:
@@ -206,9 +206,9 @@ class RedBlackTree:
                 self.rotate_right(parent)
                 node = node.right
             if (node == parent.right):
-                self.rotate_left(node)
+                self.rotate_left(grandparent)
             else:
-                self.rotate_right(node)
+                self.rotate_right(grandparent)
             parent.color = 0
             grandparent.color = 1
 
@@ -260,7 +260,7 @@ class RedBlackTree:
     def search_recursive(self, root, data):
         if root is None:
             return None
-        if self.is_leaf(root):
+        if root.data is None or self.is_leaf(root):
             return None
         if data > root.data:
             return self.search_recursive(root.right, data)
@@ -285,8 +285,11 @@ class RedBlackTree:
         while not q.empty():
             top = q.get()
             if top is not None and top.data is not None:
-                print(str(top.data) + " " + str(top.color))
+                # print(type(top.data))
+                print(str(top.data) + " " + ('Red' if top.color == 1 else 'Black'))
+                # if top.left.data is not None:
                 q.put(top.left)
+                # if top.right.data is not None:
                 q.put(top.right)
 
 
