@@ -43,9 +43,11 @@ class Node:
             return self.parent.get_sibling()
         return None
     def get_red(self):
-        if self.left.color is 1 or self.right.color is 1:
-            return True
-        return False
+        if self.left is not None and self.left.color is 1:
+            return self.left
+        elif self.right is not None and self.right.color is 1:
+            return self.right
+        return None
 
 
 class RedBlackTree:
@@ -159,11 +161,36 @@ class RedBlackTree:
 
     def correct_deletion(self,u,v):
         if u.color is 1 or v.color is 1:
-            v.color=0
+            u.color=0
         elif u.color is 0 and v.color is 0:
-            if u.parent is not None:
-                s=u.get_sibling()
-                if s.color is 0 and s.getRed():
+            if v.parent is not None:
+                s=v.get_sibling()
+                if s.color is 0 and s.get_red() is None:
+                    s.color=1
+                    self.correct_deletion(u,v.parent)
+                elif s.color is 0 and s.get_red() is not None:
+                    r=s.get_red()
+                    if s.parent.right is s and s.right is r:
+                        r.color=0
+                        s.parent.rotate_left()
+                    elif s.parent.left is s and s.left is r:
+                        r.color=0
+                        s.parent.rotate_right()       
+                    elif s.parent.right is s and s.left is r:
+                        r.color = 0
+                        s.rotate_right()
+                        s.parent.parent.rotate_left() 
+                    elif s.parent.left is s and s.right is r:
+                        r.color = 0
+                        s.rotate_left()
+                        s.parent.parent.rotate_right()
+                elif s.color is 1:
+                    s.parent.color=1
+                    s.color=0
+                    if s.parent.left is s:
+                        s.parent.rotate_right()
+                    else:
+                        s.parent.rotate_left()
                     
         
     def search_recursive(self,root, data):
