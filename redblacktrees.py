@@ -1,11 +1,34 @@
 import queue
+import random
+import uuid
+
+
+def gen_checksum(current=None):
+    if current is None or random.random() < 0.2:
+        return uuid.uuid4().hex
+    else:
+        return current
+
+
 class Node:
-    def __init__(self, data, left, right, parent, color = 1):
+    def __init__(self, data, left, right, parent, color=1, checksum=gen_checksum(None)):
         self.data = data
         self.right = right
         self.left = left
         self.color = color  # 1: Red, 0: Black
         self.parent = parent
+        self.checksum = checksum
+
+    def update_checksum(self):
+        self.checksum = gen_checksum(None)
+
+    def random_checksum(self):
+        new_checksum = gen_checksum(self.checksum)
+        if self.checksum != new_checksum:  # checksum was updated
+            return True
+        else:
+            self.checksum = new_checksum
+            return False
 
     def get_parent(self):
         return self.parent
@@ -18,7 +41,7 @@ class Node:
 
     def get_sibling(self):
         if self.parent:
-            if (self == self.parent.right):
+            if self == self.parent.right:
                 return self.parent.left
             return self.parent.right
         return None
@@ -62,13 +85,15 @@ class RedBlackTree:
     def __init__(self):
         self.root = None
 
-    def is_leaf(self, root):
+    @staticmethod
+    def is_leaf(root):
         if root.right is None and root.left is None:
             return True
         return False
 
-    def create_leaf(self):
-        return Node(None, None, None, None, color=0)
+    @staticmethod
+    def create_leaf():
+        return Node(None, None, None, None, color=0, checksum=None)
 
     def add_node_recursively(self, data, root):
         if data > root.data:
@@ -92,7 +117,7 @@ class RedBlackTree:
             else:
                 return self.add_node_recursively(data, root.left)
 
-    def add_node(self, data):
+    def add_node(self, data, checksum=None):
         if self.root is None:
             left_leaf = self.create_leaf()
             right_leaf = self.create_leaf()
@@ -103,6 +128,9 @@ class RedBlackTree:
             return
         current = self.add_node_recursively(data, self.root)
         self.correct_insertion(current)
+        if checksum is not None:
+            current.checksum = checksum
+        return current.checksum
 
     def del_node(self, node, val):
         # node=self.search(val)
@@ -119,9 +147,6 @@ class RedBlackTree:
                 return node.right
             elif node.left.data is not None and node.right.data is None:
                 self.correct_deletion(node.left, node)
-                # if node.parent is not None:
-                #     if node.color is 1 or node.left.color is None:
-                #         node.left.color=0
                 return node.left
             else:
                 temp = self.insuc(node.right)
@@ -140,10 +165,11 @@ class RedBlackTree:
             return node
         return self.insuc(node.left)
 
-    def correct_insertion(self, node):
+    @staticmethod
+    def correct_insertion(node):
         # print("d")
-        # print(node.data)
-        parent = node.get_parent() 
+        print(node.data)
+        parent = node.get_parent()
         uncle = node.get_uncle()
         if parent.color == 0:
             return None
@@ -155,11 +181,11 @@ class RedBlackTree:
             grandparent.color = 1
         elif parent.color == 1 and uncle.color == 0:
             grandparent = parent.get_parent()
-            if (node == parent.right and parent == grandparent.left):
+            if node == parent.right and parent == grandparent.left:
                 parent.rotate_left()
-            elif (node == parent.left and parent == grandparent.right):
+            elif node == parent.left and parent == grandparent.right:
                 parent.rotate_right()
-            if (node == parent.right):
+            if node == parent.right:
                 node.rotate_left()
             else:
                 node.rotate_right()
@@ -200,13 +226,13 @@ class RedBlackTree:
                         s.parent.rotate_left()
 
     def search_recursive(self, root, data):
-        if (root is None):
+        if root is None:
             return None
         if self.is_leaf(root):
             return None
-        if (data > root.data):
+        if data > root.data:
             return self.search_recursive(root.right, data)
-        elif (data == root.data):
+        elif data == root.data:
             return root
         else:
             return self.search_recursive(root.left, data)
@@ -217,31 +243,78 @@ class RedBlackTree:
     def search_val(self, data):
         node = self.search_recursive(self.root, data)
         if node is None:
-            return "Not found!"
+            return False
         else:
-            return node.data
+            return True
+
     def level_order_traversal(self):
         q = queue.Queue()
         q.put(self.root)
         while not q.empty():
             top = q.get()
             if top.data is not None:
-                print(str(top.data)+" "+str(top.color))
+                print(str(top.data) + " " + str(top.color))
                 q.put(top.left)
                 q.put(top.right)
-            
+
+
+def run_scan(_unstable, _stable):
+    q = queue.Queue()
+    q.put(_unstable.root)
+    while not q.empty():
+        top = q.get()
+        if top.data is not None:
+            if top.random_checksum():
+                _unstable.del_node(_unstable.root, top.data)
+            else:
+                _stable.add_node(top.data, checksum=top.checksum)
+            q.put(top.left)
+            q.put(top.right)
 
 
 if __name__ == "__main__":
-    tree = RedBlackTree()
-    tree.add_node(30)
-    tree.add_node(20)
-    tree.add_node(40)
-    tree.add_node(10)
-    tree.level_order_traversal()
-    # print(tree.search_val(20))
-    tree.del_node(tree.root,20)
-    tree.level_order_traversal()
-    # print(tree.search_val(20))
-    
+    stable = RedBlackTree()
+    unstable = RedBlackTree()
+    do_stuff = True
+    while do_stuff:
+        ch = input("1. Insert page\n2. Update page\n3. Check page\n4. Random update and scan\n5. Print trees\n\n 0. "
+                   "Exit\n: ")
+        if ch == 0:
+            do_stuff = False
+            break
+        if ch == 1:
+            data = int(input("Enter page reference (int): "))
+            if stable.search_val(data):
+                print('Found page in stable tree!')
+            else:
+                cs = unstable.add_node(data)
+                print('Added page {} with checksum {}.'.format(data, cs))
+        elif ch == 2:
+            data = int(input("Enter page reference (int): "))
+            if stable.search_val(data):
+                stable.search(data).update_checksum()
+            elif unstable.search_val(data):
+                unstable.search(data).update_checksum()
+            else:
+                print('Data not found! Adding...')
+                cs = unstable.add_node(data)
+                print('Added page {} with checksum {}.'.format(data, cs))
+        elif ch == 3:
+            data = int(input("Enter page reference (int): "))
+            if stable.search_val(data):
+                print('Found stable page {} with checksum {}'.format(data, stable.search(data).checksum))
+            elif unstable.search_val(data):
+                print('Found unstable page {} with checksum {}'.format(data, unstable.search(data).checksum))
+            else:
+                print('No such page!')
+        elif ch == 4:
+            print('Running scan and random update...')
+            run_scan(unstable, stable)
+            del unstable
+            unstable = RedBlackTree()
+        elif ch == 5:
+            print('Stable:')
+            stable.level_order_traversal()
+            print('Unstable')
+            unstable.level_order_traversal()
     # print(tree)
